@@ -1,0 +1,7 @@
+
+# repo normalize to LF
+* text=auto
+
+# force spaces
+* filter=tabspace
+
