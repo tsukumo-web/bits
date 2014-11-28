@@ -1,6 +1,6 @@
 # Scroll
 
-A smooth scrolling javascript module based on Smooth Scroll by cferdinandi and Easing by photonstorm.
+A smooth scrolling javascript module based on Smooth Scroll by cferdinandi.
 
 - [Getting Started](#getting-started)
 - [How To Use](#how-to-use)
@@ -13,7 +13,10 @@ Stable build is `scroll.min.js`, development code is `scroll.coffee`
 
 ### Include
 
+(Also supports amd and commonjs)
+
 ```jade
+script(src="path/to/easing.min.js")
 script(src="path/to/scroll.min.js")
 ```
 
@@ -106,41 +109,9 @@ data-scroll-url="boolean"
 
 ### Easing Options
 
-#### Defaults
+Uses easing module, see for options
 
- - linear
- - quad
- - quad-in
- - quad-out
- - cubic
- - cubic-in
- - cubic-out
- - quart
- - quart-in
- - quart-out
- - quint
- - quint-in
- - quint-out
- - sin
- - sin-in
- - sin-out
- - expo
- - expo-in
- - expo-out
- - circ
- - circ-in
- - circ-out
- - elastic
- - elastic-in
- - elastic-out
- - back
- - back-in
- - back-out
- - bounce
- - bounce-in
- - bounce-out
-
-#### Custom
+### Custom
 
 ```coffee
     scroll.addEasing 'linear', ( t ) -> t
