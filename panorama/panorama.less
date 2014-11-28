@@ -1,0 +1,19 @@
+.panorama
+{
+  -webkit-overflow-scrolling: touch;  // momentum scrolling
+  white-space     : nowrap;           // forces items to wrap horizontally
+  height          : 100%;             // ensures wrapper is maximum size of container
+  overflow-y      : hidden;           // ensures any content pushed outside of panel is clipped
+  font-size       : 0;                // removes spacing caused by nowrap
+  box-sizing      : border-box;       // calculate for padding and border
+
+  .panel {
+    position        : relative;         // resets positioning for internal items
+    display         : inline-block;     // causes inline and block styling
+    font-size       : initial;          // resets font size
+    white-space     : initial;          // resets white space
+    vertical-align  : top;              // aligns panels to the top of the wrapper (default is bottom)
+    overflow        : auto;             // resets overflow so panels may scroll for content
+    height          : 100%;             // fit all panels to height of wrapper
+  }
+}
