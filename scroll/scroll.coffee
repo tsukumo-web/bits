@@ -44,7 +44,7 @@
         # @memberOf scroll
         # @property supported
         # @type Boolean
-        supported   : !!document.querySelector and !!document.addEventListener and !!document.removeEventListener
+        supported   : !!document.querySelector and !!document.querySelectorAll and !!document.addEventListener and !!document.removeEventListener
 
 
 
@@ -63,34 +63,15 @@
         easing: easing
 
         ##
-        # cached settings used by new scroll instances
-        # @memberOf g
-        # @property settings
-        # @type Object
-        # @private
-        settings    : null
-
-        ##
-        # page to scroll when animating
+        # pages to scroll when animating
         #
         # this may only be set at the time of init
         #
         # @memberOf g
-        # @property page
+        # @property pages
         # @type Object
         # @private
-        page        : document.body
-
-        ##
-        # direction to scroll when animating
-        #
-        # this may only be set at the time of init
-        #
-        # @memberOf g
-        # @property direction
-        # @type Object
-        # @private
-        direction   : api.VERTICAL
+        pages       : null
 
         ##
         # cached default settings
@@ -100,7 +81,7 @@
         # @private
         defaults    :
             speed       : 500
-            easing      : 'cubic'
+            easing      : 'expo'
             offset      : 0
             url         : true
             before      : null
@@ -119,43 +100,39 @@
     ##
     # scrolls the page in the set direction
     # @private
+    # @param {Object} page information
+    # @param {Number} dir direction of scroll
     # @param {Number} amount distance to scroll
-    scroll = ( amount ) ->
-        if g.direction is api.VERTICAL
-            g.page.scrollTop = amount
+    scroll = ( page, dir, amount ) ->
+        if dir is api.VERTICAL
+            page.scrollTop = amount
         else
-            g.page.scrollLeft = amount
+            page.scrollLeft = amount
 
     ##
     # retrieves the current scroll offset of the page in the proper direction
     # @private
+    # @param {Object} page element being scrolled
+    # @param {Number} dir direction of scroll
     # @return {Number} scroll offset
-    offset = ( ) ->
-        if g.direction is api.VERTICAL
-            return g.page.scrollTop
+    offset = ( page, dir ) ->
+        if dir is api.VERTICAL
+            return page.scrollTop
         else
-            return g.page.scrollLeft
-
-    ##
-    # retrieves the size of the page in the proper direction
-    # @private
-    # @return {Number} full size of the page
-    #size = ( ) ->
-    #    if g.direction is api.VERTICAL
-    #        return Math.max g.page.scrollHeight, g.page.offsetHeight, g.page.offsetWidth
-    #    else
-    #        return Math.max g.page.scrollWidth, g.page.offsetWidth, g.page.clientWidth
+            return page.scrollLeft
 
     ##
     # retrieves the position to end scrolling at
     # @private
+    # @param {Object} page element being scrolled
+    # @param {Number} dir direction of scroll
     # @param {Object} to dom element to scroll to
     # @param {Number} offset to factor in
-    findEnd = ( to, offset ) ->
+    findEnd = ( page, dir, to, offset ) ->
         pos = 0
         if to.offsetParent
             while to
-                pos += if g.direction is api.VERTICAL then to.offsetTop else to.offsetLeft
+                pos += if dir is api.VERTICAL then to.offsetTop else to.offsetLeft
                 to = to.offsetParent
         pos -= offset
         Math.max pos, 0
@@ -182,6 +159,10 @@
         ret['speed'] = Number attr if attr
         attr = el.getAttribute 'data-scroll-offset'
         ret['offset'] = Number attr if attr
+        attr = el.getAttribute 'data-scroll-what'
+        ret['page'] = String attr if attr
+        attr = el.getAttribute 'data-scroll-direction'
+        ret['direction'] = if attr is 'horizontal' then api.HORIZONTAL else api.VERTICAL
         attr = el.getAttribute 'data-scroll-url'
         ret['url'] = String(attr) is 'true' if attr
         ret
@@ -195,9 +176,11 @@
     # @param {Number} [options.offset] distance to offset scroll
     # @return {Object} object with stop function
     api.animate = ( to, options ) ->
+        return console.warn 'module not initialized' if not g.pages
 
+        page = g.pages[options.page] or g.pages.body
         # setup
-        settings = helper.merge g.settings or g.defaults, options or { }
+        settings = helper.merge page.settings or { }, options or { }
 
         # defaults
         settings.offset = parseInt settings.offset, 10 # enforce integer
@@ -211,8 +194,8 @@
         return console.warn 'element not found matching', to if not elem
 
         # position and distance
-        start_pos = offset()
-        distance = findEnd(elem, g.settings.offset) - start_pos
+        start_pos = offset page.elem, page.direction
+        distance = findEnd(page.elem, page.direction, elem, settings.offset) - start_pos
         # percentage = 0
 
         # timing
@@ -233,7 +216,7 @@
         # keeps animation going
         keep = ( ) ->
             percentage = Math.min (time += 16) / settings.speed, 1
-            scroll Math.floor start_pos + distance * easing percentage
+            scroll page.elem, page.direction, Math.floor start_pos + distance * easing percentage
             stop() if percentage is 1
 
         # starts animation
@@ -242,7 +225,7 @@
             interval = setInterval keep, 16
 
         # clear fix hehe
-        scroll 0 if offset() is 0
+        scroll 0 if offset(page.elem, page.direction) is 0
 
         # update the url and begin animation
         updateUrl to, settings.url
@@ -264,9 +247,7 @@
     ##
     # removes event bindings and resets settings
     api.destroy = ( ) ->
-        return if not g.settings
         document.removeEventListener 'click', handler, false
-        g.settings = null
 
     ##
     # initializes settings and event bindings
@@ -282,31 +263,30 @@
     api.init = ( options ) ->
         return console.warn 'module not supported' if not api.supported
 
-        # remove any previous settings and event handlers
+        # remove any previous and event handlers
         api.destroy()
+        # remove any previous page settings
+        g.pages =
+            body:
+                elem: document.body
+                direction: api.VERTICAL
+                settings: g.defaults
 
         # find the page by selector
-        page = document.querySelector '[data-scroll-page]'
-        # retrieve inline options if the element existed
-        inline = getOptionsFromElement page if page
+        pages = document.querySelectorAll '[data-scroll-page]'
 
-        # merge settings in oop and store them
-        g.settings = helper.merge g.defaults, options or { }, inline
+        for page in pages
+            name = page.getAttribute 'data-scroll-page'
+            # retrieve inline options if the element existed
+            settings = helper.merge g.defaults, options or { }, getOptionsFromElement page
 
-        # set page and direction based on settings
-        if g.settings.page
-            g.page = g.settings.page
-        if g.settings.direction
-            g.direction = g.settings.direction
+            direction = page.getAttribute 'data-scroll-direction'
+            direction = if direction is 'horizontal' then api.HORIZONTAL else api.VERTICAL
 
-        # override page and direction with inline options
-        if page
-            g.page = page
-            dir = page.getAttribute 'data-scroll-direction'
-            if dir and dir is 'horizontal'
-                g.direction = api.HORIZONTAL
-            else if dir and dir is 'vertical'
-                g.direction = api.VERTICAL
+            g.pages[name] =
+                elem: page
+                direction: direction
+                settings: settings
 
         # bind click handler
         document.addEventListener 'click', handler, false
@@ -345,6 +325,7 @@
                     return el if el.hasAttribute selector.substr 0, selector.length - 1
             el = el.parentNode
         false
+
 
 )()))
 

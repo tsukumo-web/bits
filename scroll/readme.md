@@ -56,7 +56,7 @@ script.
 
 ```coffee
 speed       : 500
-easing      : 'cubic'
+easing      : 'expo'
 offset      : 0
 url         : true
 before      : null
@@ -72,8 +72,6 @@ offset      : # Number
 url         : # Boolean
 before      : # Function ( String[to] )
 after       : # Function ( String[to] )
-page        : # DOM Element
-direction   : # Number (scroll.HORIZONTAL | scroll.VERTICAL)
 ```
 
 ### Animation Object
@@ -101,6 +99,8 @@ data-scroll-url="boolean"
 ### Animation Inline
 
 ```jade
+data-scroll-what="required"
+data-scroll-direction="horizontal|vertical"
 data-scroll-speed="number"
 data-scroll-ease="string"
 data-scroll-offset="number"
