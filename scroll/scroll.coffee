@@ -162,7 +162,8 @@
         attr = el.getAttribute 'data-scroll-what'
         ret['page'] = String attr if attr
         attr = el.getAttribute 'data-scroll-direction'
-        ret['direction'] = if attr is 'horizontal' then api.HORIZONTAL else api.VERTICAL
+        if attr
+            ret['direction'] = if attr is 'horizontal' then api.HORIZONTAL else api.VERTICAL
         attr = el.getAttribute 'data-scroll-url'
         ret['url'] = String(attr) is 'true' if attr
         ret
@@ -197,6 +198,8 @@
         start_pos = offset page.elem, page.direction
         distance = findEnd(page.elem, page.direction, elem, settings.offset) - start_pos
         # percentage = 0
+
+        return console.warn 'no distance to scroll' if not distance
 
         # timing
         time = 0
@@ -233,21 +236,40 @@
 
         return stop : stop
 
+
+    touchdown = false
+
     ##
-    # document handler begins animation on data-scroll element click / tap
+    # document handler begins timer for click or tap
     # @private
     # @param {Object} evt dom event triggered by event listener
-    handler = ( evt ) ->
-        el = helper.closest evt.target, '[data-scroll]'
-        if el
-            evt.preventDefault()
-            g.scrolling.stop() if g.scrolling
-            g.scrolling = api.animate el.getAttribute('data-scroll'), getOptionsFromElement el
+    start_handler = ( evt ) ->
+        touchdown = true
+        setTimeout ( ) ->
+            return if touchdown
+            el = helper.closest evt.target, '[data-scroll]'
+            if el
+                evt.preventDefault()
+                g.scrolling.stop() if g.scrolling
+                g.scrolling = api.animate el.getAttribute('data-scroll'), getOptionsFromElement el
+        , 200
+
+
+    ##
+    # document handler ends touch or mouse down flag
+    # @private
+    # @param {Object} evt dom event triggered by event listener
+    end_handler = ( evt ) ->
+        touchdown = false
+
 
     ##
     # removes event bindings and resets settings
     api.destroy = ( ) ->
-        document.removeEventListener 'click', handler, false
+        document.removeEventListener 'mousedown', start_handler, false
+        document.removeEventListener 'touchstart', start_handler, false
+        document.removeEventListener 'mouseup', end_handler, false
+        document.removeEventListener 'touchend', end_handler, false
 
     ##
     # initializes settings and event bindings
@@ -289,7 +311,10 @@
                 settings: settings
 
         # bind click handler
-        document.addEventListener 'click', handler, false
+        document.addEventListener 'mousedown', start_handler, false
+        document.addEventListener 'touchstart', start_handler, false
+        document.addEventListener 'mouseup', end_handler, false
+        document.addEventListener 'touchend', end_handler, false
 
     # return the public api (from factory)
     return api
