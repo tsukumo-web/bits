@@ -238,6 +238,7 @@
 
 
     touchdown = false
+    touchmove = false
 
     ##
     # document handler begins timer for click or tap
@@ -245,15 +246,15 @@
     # @param {Object} evt dom event triggered by event listener
     start_handler = ( evt ) ->
         touchdown = true
+        touchmove = false
         setTimeout ( ) ->
-            return if touchdown
+            return if touchdown or touchmove
             el = helper.closest evt.target, '[data-scroll]'
             if el
                 evt.preventDefault()
                 g.scrolling.stop() if g.scrolling
                 g.scrolling = api.animate el.getAttribute('data-scroll'), getOptionsFromElement el
         , 200
-
 
     ##
     # document handler ends touch or mouse down flag
@@ -262,6 +263,12 @@
     end_handler = ( evt ) ->
         touchdown = false
 
+    ##
+    # document handler touch or mouse moved flag
+    # @private
+    # @param {Object} evt dom event triggered by event listener
+    move_handler = ( evt ) ->
+        touchmove = true
 
     ##
     # removes event bindings and resets settings
@@ -270,6 +277,9 @@
         document.removeEventListener 'touchstart', start_handler, false
         document.removeEventListener 'mouseup', end_handler, false
         document.removeEventListener 'touchend', end_handler, false
+        document.removeEventListener 'touchcancel', end_handler, false
+        document.removeEventListener 'mousemove', move_handler, false
+        document.removeEventListener 'touchmove', move_handler, false
 
     ##
     # initializes settings and event bindings
@@ -315,6 +325,9 @@
         document.addEventListener 'touchstart', start_handler, false
         document.addEventListener 'mouseup', end_handler, false
         document.addEventListener 'touchend', end_handler, false
+        document.addEventListener 'touchcancel', end_handler, false
+        document.addEventListener 'mousemove', move_handler, false
+        document.addEventListener 'touchmove', move_handler, false
 
     # return the public api (from factory)
     return api
