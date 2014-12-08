@@ -1,0 +1,329 @@
+
+.datepicker
+{
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+
+    *
+    {
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    header, .prev, .next, li
+    {& > div{
+        position: relative;
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+        text-align: center;
+    }}
+
+    ul
+    {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        & > li
+        {
+            cursor: pointer;
+            float: left;
+        }
+    }
+
+    & > .page
+    {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+
+        transition: 0ms;
+
+        &.hide
+        {
+            //top: -100%;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        & > *
+        {
+            width: 100%;
+        }
+
+        & > header
+        {
+            height: 25%;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        & > .controls
+        {
+            height: 0;
+            z-index: 15;
+
+            & > .prev, & > .next
+            {
+                cursor: pointer;
+                position: absolute;
+                top: 0;
+                height: 25%;
+                width: 20%;
+            }
+
+            & > .prev
+            {
+                left: 0;
+            }
+
+            & > .next
+            {
+                right: 0;
+            }
+        }
+
+        &.yys, &.mms, &.dds
+        {
+            & > ul
+            {
+                height: 75%;
+
+                & > li
+                {
+                    width: 25%;
+                    height: 33.333%;
+                }
+            }
+        }
+
+        &.dds
+        {
+            & > ul > li
+            {
+                width: 14.285%;
+                height: 14.285%;
+
+                &.mm-prev, &.mm-next
+                {
+                  opacity: 0.5
+                }
+            }
+        }
+    }
+}
+
+.no-weekdays > .datepicker
+{
+    .ww
+    {
+        display: none;
+    }
+
+    .dds
+    {
+        & > ul > li
+        {
+            height: 16.666% !important;
+        }
+    }
+}
+
+.no-controls > .datepicker
+{
+    .controls
+    {
+        display: none;
+    }
+}
+
+.slow > .datepicker
+{
+    & > .page
+    {
+        transition: 1000ms;
+    }
+}
+
+.normal > .datepicker
+{
+    & > .page
+    {
+        transition: 500ms;
+    }
+}
+
+.fast > .datepicker
+{
+    & > .page
+    {
+        transition: 300ms;
+    }
+}
+
+.fade > .datepicker
+{
+    & > .page.hide
+    {
+        opacity: 0;
+    }
+}
+
+.top > .datepicker
+{
+    & > .page
+    {
+        &.above
+        {
+            top: -100%;
+        }
+    }
+}
+
+.right > .datepicker
+{
+    & > .page
+    {
+        &.above
+        {
+            left: 100%;
+        }
+    }
+}
+
+.bottom > .datepicker
+{
+    & > .page
+    {
+        &.above
+        {
+            top: 100%;
+        }
+    }
+}
+
+.left > .datepicker
+{
+    & > .page
+    {
+        &.above
+        {
+            left: -100%;
+        }
+    }
+}
+
+&.shuffle
+{
+    &.top > .datepicker
+    {
+        & > .page
+        {
+            &.below
+            {
+                top: -100%;
+            }
+        }
+    }
+
+    &.right > .datepicker
+    {
+        & > .page
+        {
+            &.below
+            {
+                left: 100%;
+            }
+        }
+    }
+
+    &.bottom > .datepicker
+    {
+        & > .page
+        {
+            &.below
+            {
+                top: 100%;
+            }
+        }
+    }
+
+    &.left > .datepicker
+    {
+        & > .page
+        {
+            &.below
+            {
+                left: -100%;
+            }
+        }
+    }
+}
+
+&.shift
+{
+    &.top > .datepicker
+    {
+        & > .page
+        {
+            &.above
+            {
+                top: 100%;
+            }
+            &.below
+            {
+                top: -100%;
+            }
+        }
+    }
+
+    &.right > .datepicker
+    {
+        & > .page
+        {
+            &.above
+            {
+                left: -100%;
+            }
+            &.below
+            {
+                left: 100%;
+            }
+        }
+    }
+
+    &.bottom > .datepicker
+    {
+        & > .page
+        {
+            &.above
+            {
+                top: -100%;
+            }
+            &.below
+            {
+                top: 100%;
+            }
+        }
+    }
+
+    &.left > .datepicker
+    {
+        & > .page
+        {
+            &.above
+            {
+                left: 100%;
+            }
+            &.below
+            {
+                left: -100%;
+            }
+        }
+    }
+}
