@@ -1,17 +1,17 @@
 
 (( root, product ) ->
 
-    name = 'panorama'
     product = product()
 
     # register for amd
     if typeof define is 'function' and define.amd
-        define name, product
+        define 'panorama', product
     # register for commonjs
     else if typeof exports is 'object'
         module.exports = product
     # register to root
     else
+        name = 'panorama'
         conflict = root[name]
         root[name] = product
         # provide no conflict to remove from root

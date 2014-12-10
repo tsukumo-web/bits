@@ -1,16 +1,15 @@
 
 (( root, product ) ->
 
-    name = 'datepicker'
-
     # register for amd
     if typeof define is 'function' and define.amd
-        define name, [ 'moment' ], product
+        define 'datepicker', [ 'moment' ], product
     # register for commonjs
     else if typeof exports is 'object'
         module.exports = product require 'moment'
     # register to root (assume dependencies also in root)
     else
+        name = 'datepicker'
         conflict = root[name]
         root[name] = product root.moment
         # provide no conflict to remove from root

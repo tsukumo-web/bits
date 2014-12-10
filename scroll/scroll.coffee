@@ -1,15 +1,14 @@
 (( root, product ) ->
 
-    name = 'scroll'
-
     # register for amd
     if typeof define is 'function' and define.amd
-        define name, [ 'easing' ], product
+        define 'scroll', [ 'easing' ], product
     # register for commonjs
     else if typeof exports is 'object'
         module.exports = product require 'easing'
     # register to root (assume dependencies also in root)
     else
+        name = 'scroll'
         conflict = root[name]
         root[name] = product root.easing
         # provide no conflict to remove from root
