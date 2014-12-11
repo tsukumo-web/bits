@@ -1,3 +1,4 @@
+
 (( root, product ) ->
 
     # register for amd
@@ -60,7 +61,7 @@
         # @property events
         # @type Object
         # @private
-        events      : new Hammer.Manager document.body
+        events      : new Hammer.Manager document.body, recognizers: [[Hammer.Tap]]
 
         ##
         # pages to scroll when animating
@@ -204,49 +205,21 @@
                 scroll page.elem, page.direction, Math.floor start_pos + distance * t
 
 
-    touchdown = false
-    touchmove = false
-
     ##
-    # document handler begins timer for click or tap
+    # document handler for click or tap
     # @private
     # @param {Object} evt dom event triggered by event listener
-    start_handler = ( evt ) ->
-        touchdown = true
-        touchmove = false
-        setTimeout ( ) ->
-            return if touchdown or touchmove
-            el = helper.closest evt.target, '[data-scroll]'
-            if el
-                evt.preventDefault()
-                g.scrolling.stop() if g.scrolling
-                g.scrolling = api.animate el.getAttribute('data-scroll'), getOptionsFromElement el
-        , 200
-
-    ##
-    # document handler ends touch or mouse down flag
-    # @private
-    # @param {Object} evt dom event triggered by event listener
-    end_handler = ( evt ) ->
-        touchdown = false
-
-    ##
-    # document handler touch or mouse moved flag
-    # @private
-    # @param {Object} evt dom event triggered by event listener
-    move_handler = ( evt ) ->
-        touchmove = true
+    handler = ( evt ) ->
+        el = helper.closest evt.target, '[data-scroll]'
+        if el
+            evt.preventDefault()
+            g.scrolling.stop() if g.scrolling
+            g.scrolling = api.animate el.getAttribute('data-scroll'), getOptionsFromElement el
 
     ##
     # removes event bindings and resets settings
     api.destroy = ( ) ->
-        document.removeEventListener 'mousedown', start_handler, false
-        document.removeEventListener 'touchstart', start_handler, false
-        document.removeEventListener 'mouseup', end_handler, false
-        document.removeEventListener 'touchend', end_handler, false
-        document.removeEventListener 'touchcancel', end_handler, false
-        document.removeEventListener 'mousemove', move_handler, false
-        document.removeEventListener 'touchmove', move_handler, false
+        g.events.off 'tap'
 
     ##
     # initializes settings and event bindings
@@ -288,7 +261,8 @@
                 settings: settings
 
         # bind click handler
-        events.on 'tap', start_handler
+        console.log g.events
+        g.events.on 'tap', handler
 
     # return the public api (from factory)
     return api
@@ -325,7 +299,4 @@
             el = el.parentNode
         false
 
-
 )()))
-
-# inspired by Smooth Scroll, cferdinandi
