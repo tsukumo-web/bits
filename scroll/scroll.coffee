@@ -261,7 +261,6 @@
                 settings: settings
 
         # bind click handler
-        console.log g.events
         g.events.on 'tap', handler
 
     # return the public api (from factory)
