@@ -2,22 +2,22 @@
 
     # register for amd
     if typeof define is 'function' and define.amd
-        define 'scroll', [ 'easing' ], product
+        define 'scroll', [ 'hammer', 'anim' ], product
     # register for commonjs
     else if typeof exports is 'object'
-        module.exports = product require 'easing'
+        module.exports = product require('hammer'), require('anim')
     # register to root (assume dependencies also in root)
     else
         name = 'scroll'
         conflict = root[name]
-        root[name] = product root.easing
+        root[name] = product root.Hammer, root.anim
         # provide no conflict to remove from root
         root[name].noConflict = ( ) ->
             tmp = root[name]
             root[name] = conflict
             return tmp
 
-)(window or this, (( helper, easing ) ->
+)(window or this, (( helper, Hammer, anim ) ->
 
     ##
     # scroll properties and functions
@@ -54,12 +54,13 @@
     g =
 
         ##
-        # easing functions
+        # event manager
+        #
         # @memberOf g
-        # @property easing
+        # @property events
         # @type Object
-        # private
-        easing: easing
+        # @private
+        events      : new Hammer.Manager document.body
 
         ##
         # pages to scroll when animating
@@ -85,16 +86,6 @@
             url         : true
             before      : null
             after       : null
-
-    ##
-    # adds an easing function
-    # @memberOf api
-    # @method addEasing
-    # @param {String} name key for easing function
-    # @param {Function} func easing function
-    # @param {Number} func.t time of completion in percent
-    api.addEasing = ( name, func ) -> g.easing[name] = func
-
 
     ##
     # scrolls the page in the set direction
@@ -133,8 +124,7 @@
             while to
                 pos += if dir is api.VERTICAL then to.offsetTop else to.offsetLeft
                 to = to.offsetParent
-        pos -= offset
-        Math.max pos, 0
+        Math.max (pos - offset), 0
 
     ##
     # changes the url to match the scroll position
@@ -185,7 +175,7 @@
         # defaults
         settings.offset = parseInt settings.offset, 10 # enforce integer
         settings.speed  = parseInt settings.speed,  10 # enforce integer
-        settings.easing   = String settings.easing     # enforce string
+        settings.easing = String settings.easing       # enforce string
 
         # find elements elem
         elem = document.querySelector to
@@ -198,42 +188,20 @@
         distance = findEnd(page.elem, page.direction, elem, settings.offset) - start_pos
         # percentage = 0
 
-        return console.warn 'no distance to scroll' if not distance
-
-        # timing
-        time = 0
-        interval = null
-
-        easing = g.easing[settings.easing]
-        if not easing
-            console.warn 'easing function ', settings.easing, 'not found'
-            easing = g.easing['linear']
-
-        # stops animation
-        stop = ( ) ->
-            clearInterval interval
-            elem.focus()
-            settings.after? to
-
-        # keeps animation going
-        keep = ( ) ->
-            percentage = Math.min (time += 16) / settings.speed, 1
-            scroll page.elem, page.direction, Math.floor start_pos + distance * easing percentage
-            stop() if percentage is 1
-
-        # starts animation
-        start = ( ) ->
-            settings.before? to
-            interval = setInterval keep, 16
+        return if not distance
 
         # clear fix hehe
-        scroll 0 if offset(page.elem, page.direction) is 0
+        scroll 0 if start_pos is 0
 
-        # update the url and begin animation
+        # update the url
         updateUrl to, settings.url
-        start()
 
-        return stop : stop
+        return anim
+            auto: true,
+            ease: settings.easing
+            speed: settings.speed
+            next: ( t ) ->
+                scroll page.elem, page.direction, Math.floor start_pos + distance * t
 
 
     touchdown = false
@@ -320,13 +288,7 @@
                 settings: settings
 
         # bind click handler
-        document.addEventListener 'mousedown', start_handler, false
-        document.addEventListener 'touchstart', start_handler, false
-        document.addEventListener 'mouseup', end_handler, false
-        document.addEventListener 'touchend', end_handler, false
-        document.addEventListener 'touchcancel', end_handler, false
-        document.addEventListener 'mousemove', move_handler, false
-        document.addEventListener 'touchmove', move_handler, false
+        events.on 'tap', start_handler
 
     # return the public api (from factory)
     return api
