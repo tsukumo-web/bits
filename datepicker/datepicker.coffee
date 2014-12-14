@@ -117,10 +117,12 @@
 
         setYear: ( yy ) ->
             @selected.yy = yy
+            @viewing.mm = mm
             @onchange? @getMoment()
             @render()
         setMonth: ( mm ) ->
             @selected.mm = mm
+            @viewing.mm = mm
             @onchange? @getMoment()
             @render()
         setDay: ( dd ) ->
@@ -131,17 +133,19 @@
             if not mm and not dd
                 if typeof yy is 'string'
                     split = yy.split '-'
-                    yy = split[0]
-                    mm = split[1]
-                    dd = split[2]
+                    yy = parseInt split[0], 10
+                    mm = (parseInt split[1], 10) - 1
+                    dd = parseInt split[2], 10
                 else
                     time = yy
                     yy = time.year()
                     mm = time.month()
-                    dd = time.day()
+                    dd = time.date()
 
             @selected.yy = yy
+            @viewing.yy = yy
             @selected.mm = mm
+            @viewing.mm = mm
             @selected.dd = dd
             @onchange? @getMoment()
             @render()
